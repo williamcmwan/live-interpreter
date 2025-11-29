@@ -65,6 +65,12 @@ Open http://localhost:3000 in your browser.
 3. Speak in Cantonese or English
 4. Transcription + translation appears in real-time
 
+## Route System Audio (Optional)
+
+Want to transcribe YouTube, Zoom, or other system audio instead of microphone?
+
+See [BLACKHOLE_SETUP.md](BLACKHOLE_SETUP.md) for instructions on setting up BlackHole virtual audio.
+
 ## Architecture
 
 - **Transcription:** whisper-stream (local, runs on your Mac)
