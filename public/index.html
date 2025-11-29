@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Interpreter - Cantonese ↔ English</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      color: #fff;
+      padding: 20px;
+    }
+    .container { max-width: 1200px; margin: 0 auto; }
+    h1 { text-align: center; margin-bottom: 20px; font-size: 2rem; }
+    .setup-panel {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .setup-panel input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover { transform: translateY(-2px); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-primary { background: #4CAF50; color: white; }
+    .btn-danger { background: #f44336; color: white; }
+    .btn-secondary { background: #2196F3; color: white; }
+    .direction-toggle {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .direction-toggle button {
+      background: rgba(255,255,255,0.1);
+      color: white;
+    }
+    .direction-toggle button.active { background: #9c27b0; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎙️ Live Interpreter</h1>
+    <h2 style="text-align:center;margin-bottom:20px;opacity:0.8">Cantonese ↔ English (Auto-detect)</h2>
+    
+    <div class="setup-panel">
+      <input type="password" id="apiKey" placeholder="Enter your Gemini API Key">
+      <button class="btn-primary" id="saveKey" style="width:100%">Save API Key</button>
+    </div>
+
+    <div class="controls">
+      <button class="btn-primary" id="startDesktop" disabled>🖥️ Start Capture</button>
+      <button class="btn-danger" id="stop" disabled>⏹️ Stop</button>
+    </div>
+    
+    <p style="text-align:center;opacity:0.7;margin-bottom:20px;font-size:14px">
+      Select a Chrome tab and check "Share audio" to capture its sound
+    </p>
+
+    <div class="setup-panel" style="margin-top:10px">
+      <div style="display:flex;gap:10px">
+        <input type="text" id="manualText" placeholder="Or type text here to translate..." style="flex:1">
+        <button class="btn-secondary" id="translateBtn" disabled>Translate</button>
+      </div>
+    </div>
+
+    <div id="status" style="text-align:center;margin-bottom:20px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.1)">
+      Enter your Gemini API key to start
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div class="panel" style="background:rgba(255,255,255,0.1);border-radius:12px;padding:20px;min-height:300px">
+        <h3 style="margin-bottom:10px">📝 Original</h3>
+        <div id="original" style="font-size:18px;line-height:1.6"></div>
+      </div>
+      <div class="panel" style="background:rgba(76,175,80,0.2);border-radius:12px;padding:20px;min-height:300px">
+        <h3 style="margin-bottom:10px">🌐 Translation</h3>
+        <div id="translation" style="font-size:18px;line-height:1.6"></div>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
