@@ -3,26 +3,48 @@ let isListening = false;
 
 const apiKeyInput = document.getElementById('apiKey');
 const saveKeyBtn = document.getElementById('saveKey');
+const cancelKeyBtn = document.getElementById('cancelKey');
+const settingsBtn = document.getElementById('settingsBtn');
+const apiKeyModal = document.getElementById('apiKeyModal');
 const startBtn = document.getElementById('startDesktop');
 const stopBtn = document.getElementById('stop');
 const statusEl = document.getElementById('status');
-const originalEl = document.getElementById('original');
-const translationEl = document.getElementById('translation');
+const translationsEl = document.getElementById('translations');
 const manualTextInput = document.getElementById('manualText');
 const translateBtn = document.getElementById('translateBtn');
+const translateSection = document.getElementById('translateSection');
 
-// Update button text
-startBtn.textContent = '🎙️ Start Microphone';
+// Collapsible toggle
+translateSection.querySelector('.collapsible-header').onclick = () => {
+  translateSection.classList.toggle('open');
+};
+
+// Modal controls
+settingsBtn.onclick = () => {
+  apiKeyModal.classList.add('show');
+  apiKeyInput.value = localStorage.getItem('geminiApiKey') || '';
+  apiKeyInput.focus();
+};
+
+cancelKeyBtn.onclick = () => {
+  apiKeyModal.classList.remove('show');
+};
+
+apiKeyModal.onclick = (e) => {
+  if (e.target === apiKeyModal) apiKeyModal.classList.remove('show');
+};
 
 function connectWS() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   ws = new WebSocket(`${protocol}//${window.location.host}`);
   
   ws.onopen = () => {
-    statusEl.textContent = 'Connected. Enter API key to start.';
     const savedKey = localStorage.getItem('geminiApiKey');
     if (savedKey) {
+      statusEl.textContent = 'Connecting...';
       ws.send(JSON.stringify({ type: 'setApiKey', apiKey: savedKey }));
+    } else {
+      statusEl.textContent = 'Click ⚙️ API Key to configure';
     }
   };
   
@@ -34,6 +56,7 @@ function connectWS() {
       statusEl.style.background = 'rgba(76,175,80,0.3)';
       startBtn.disabled = false;
       translateBtn.disabled = false;
+      apiKeyModal.classList.remove('show');
     } else if (data.type === 'whisperStarted') {
       statusEl.textContent = '🎙️ Listening via whisper-stream...';
       statusEl.style.background = 'rgba(156,39,176,0.3)';
@@ -67,12 +90,14 @@ connectWS();
 saveKeyBtn.onclick = () => {
   const apiKey = apiKeyInput.value.trim();
   if (!apiKey) return alert('Please enter an API key');
-  ws.send(JSON.stringify({ type: 'setApiKey', apiKey }));
   localStorage.setItem('geminiApiKey', apiKey);
+  if (ws.readyState === WebSocket.OPEN) {
+    statusEl.textContent = 'Validating API key...';
+    ws.send(JSON.stringify({ type: 'setApiKey', apiKey }));
+  }
 };
 
-const savedKey = localStorage.getItem('geminiApiKey');
-if (savedKey) apiKeyInput.value = savedKey;
+apiKeyInput.onkeypress = (e) => { if (e.key === 'Enter') saveKeyBtn.click(); };
 
 // Manual text translation
 translateBtn.onclick = () => {
@@ -103,20 +128,26 @@ stopBtn.onclick = () => {
 
 // Add translation to display
 function addTranslation(original, translated, direction) {
-  const arrow = direction === 'cantonese-to-english' ? '粵→EN' : 'EN→粵';
+  const isCantonese = direction === 'cantonese-to-english';
   
-  const origDiv = document.createElement('div');
-  origDiv.style.cssText = 'padding:10px;margin-bottom:10px;background:rgba(255,255,255,0.1);border-radius:8px';
-  origDiv.innerHTML = `<small style="opacity:0.6">${arrow}</small> ${original}`;
-  originalEl.insertBefore(origDiv, originalEl.firstChild);
+  const entryDiv = document.createElement('div');
+  entryDiv.style.cssText = 'padding:12px;margin-bottom:12px;background:rgba(255,255,255,0.05);border-radius:8px;border-left:3px solid #4CAF50';
   
-  const transDiv = document.createElement('div');
-  transDiv.style.cssText = 'padding:10px;margin-bottom:10px;background:rgba(76,175,80,0.2);border-radius:8px';
-  transDiv.textContent = translated;
-  translationEl.insertBefore(transDiv, translationEl.firstChild);
+  if (isCantonese) {
+    entryDiv.innerHTML = `
+      <div style="margin-bottom:6px"><span style="color:#FFD700;font-weight:bold">粵-</span> ${original}</div>
+      <div><span style="color:#4CAF50;font-weight:bold">EN-</span> ${translated}</div>
+    `;
+  } else {
+    entryDiv.innerHTML = `
+      <div style="margin-bottom:6px"><span style="color:#4CAF50;font-weight:bold">EN-</span> ${original}</div>
+      <div><span style="color:#FFD700;font-weight:bold">粵-</span> ${translated}</div>
+    `;
+  }
   
-  while (originalEl.children.length > 20) {
-    originalEl.removeChild(originalEl.lastChild);
-    translationEl.removeChild(translationEl.lastChild);
+  translationsEl.insertBefore(entryDiv, translationsEl.firstChild);
+  
+  while (translationsEl.children.length > 20) {
+    translationsEl.removeChild(translationsEl.lastChild);
   }
 }

@@ -56,7 +56,7 @@ npm start
 node server.js
 ```
 
-Open http://localhost:3000 in your browser.
+Open http://localhost:3004 in your browser.
 
 ## How to Use
 

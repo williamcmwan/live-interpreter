@@ -14,29 +14,13 @@
       padding: 20px;
     }
     .container { max-width: 1200px; margin: 0 auto; }
-    h1 { text-align: center; margin-bottom: 20px; font-size: 2rem; }
-    .setup-panel {
-      background: rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .setup-panel input {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.9);
-      color: #333;
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
+    h1 { text-align: center; margin-bottom: 10px; font-size: 2rem; }
     .controls {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
       justify-content: center;
-      margin-bottom: 20px;
+      margin-bottom: 15px;
     }
     button {
       padding: 12px 24px;
@@ -51,60 +35,127 @@
     .btn-primary { background: #4CAF50; color: white; }
     .btn-danger { background: #f44336; color: white; }
     .btn-secondary { background: #2196F3; color: white; }
-    .direction-toggle {
-      display: flex;
+    .btn-small { padding: 8px 16px; font-size: 12px; }
+    
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.7);
       justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+    .modal.show { display: flex; }
+    .modal-content {
+      background: #1a1a2e;
+      border-radius: 12px;
+      padding: 24px;
+      width: 90%;
+      max-width: 400px;
+    }
+    .modal-content h3 { margin-bottom: 15px; }
+    .modal-content input {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    .modal-buttons { display: flex; gap: 10px; }
+    .modal-buttons button { flex: 1; }
+    
+    /* Collapsible section */
+    .collapsible {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      margin-bottom: 15px;
+      overflow: hidden;
+    }
+    .collapsible-header {
+      padding: 10px 15px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    .collapsible-header:hover { background: rgba(255,255,255,0.05); }
+    .collapsible-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .collapsible.open .collapsible-content { max-height: 200px; }
+    .collapsible .arrow { transition: transform 0.3s; }
+    .collapsible.open .arrow { transform: rotate(180deg); }
+    .collapsible-inner {
+      padding: 10px 15px;
+      display: flex;
       gap: 10px;
-      margin-bottom: 20px;
     }
-    .direction-toggle button {
-      background: rgba(255,255,255,0.1);
-      color: white;
+    .collapsible-inner input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+      font-size: 14px;
     }
-    .direction-toggle button.active { background: #9c27b0; }
-</style>
+  </style>
 </head>
 <body>
   <div class="container">
     <h1>🎙️ Live Interpreter</h1>
-    <h2 style="text-align:center;margin-bottom:20px;opacity:0.8">Cantonese ↔ English (Auto-detect)</h2>
-    
-    <div class="setup-panel">
-      <input type="password" id="apiKey" placeholder="Enter your Gemini API Key">
-      <button class="btn-primary" id="saveKey" style="width:100%">Save API Key</button>
-    </div>
+    <p style="text-align:center;margin-bottom:15px;opacity:0.7;font-size:14px">Cantonese ↔ English (Auto-detect)</p>
 
     <div class="controls">
-      <button class="btn-primary" id="startDesktop" disabled>🖥️ Start Capture</button>
+      <button class="btn-primary" id="startDesktop" disabled>🎙️ Start Microphone</button>
       <button class="btn-danger" id="stop" disabled>⏹️ Stop</button>
+      <button class="btn-secondary btn-small" id="settingsBtn">⚙️ API Key</button>
     </div>
-    
-    <p style="text-align:center;opacity:0.7;margin-bottom:20px;font-size:14px">
-      Select a Chrome tab and check "Share audio" to capture its sound
-    </p>
 
-    <div class="setup-panel" style="margin-top:10px">
-      <div style="display:flex;gap:10px">
-        <input type="text" id="manualText" placeholder="Or type text here to translate..." style="flex:1">
-        <button class="btn-secondary" id="translateBtn" disabled>Translate</button>
+    <div id="status" style="text-align:center;margin-bottom:15px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.1)">
+      Click ⚙️ API Key to configure
+    </div>
+
+    <div class="collapsible" id="translateSection">
+      <div class="collapsible-header">
+        <span>📝 Manual Text Translation</span>
+        <span class="arrow">▼</span>
+      </div>
+      <div class="collapsible-content">
+        <div class="collapsible-inner">
+          <input type="text" id="manualText" placeholder="Type text to translate...">
+          <button class="btn-secondary" id="translateBtn" disabled>Translate</button>
+        </div>
       </div>
     </div>
 
-    <div id="status" style="text-align:center;margin-bottom:20px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.1)">
-      Enter your Gemini API key to start
+    <div class="panel" style="background:rgba(255,255,255,0.1);border-radius:12px;padding:20px;min-height:300px">
+      <h3 style="margin-bottom:10px">📝 Translations</h3>
+      <div id="translations" style="font-size:18px;line-height:1.6"></div>
     </div>
+  </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-      <div class="panel" style="background:rgba(255,255,255,0.1);border-radius:12px;padding:20px;min-height:300px">
-        <h3 style="margin-bottom:10px">📝 Original</h3>
-        <div id="original" style="font-size:18px;line-height:1.6"></div>
-      </div>
-      <div class="panel" style="background:rgba(76,175,80,0.2);border-radius:12px;padding:20px;min-height:300px">
-        <h3 style="margin-bottom:10px">🌐 Translation</h3>
-        <div id="translation" style="font-size:18px;line-height:1.6"></div>
+  <!-- API Key Modal -->
+  <div class="modal" id="apiKeyModal">
+    <div class="modal-content">
+      <h3>🔑 Gemini API Key</h3>
+      <input type="password" id="apiKey" placeholder="Enter your Gemini API Key">
+      <div class="modal-buttons">
+        <button class="btn-secondary" id="cancelKey">Cancel</button>
+        <button class="btn-primary" id="saveKey">Save</button>
       </div>
     </div>
   </div>
+
   <script src="app.js"></script>
 </body>
 </html>
